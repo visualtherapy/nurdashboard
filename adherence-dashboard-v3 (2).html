@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Dichoptic Hub — Adherence Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #d8f0d8; --surface: #fff; --border: #c2e4c2;
+  --text: #1a1a1a; --muted: #5a7a5a; --faint: #8aaa8a; --accent: #3B5BDB;
+  --green-bg: #dcfce7; --green-text: #15803d; --green-bd: #bbf7d0;
+  --yellow-bg: #fef9c3; --yellow-text: #854d0e; --yellow-bd: #fde68a;
+  --blue-bg: #dbeafe; --blue-text: #1d4ed8; --blue-bd: #bfdbfe;
+}
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+
+/* NAV */
+nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 1.25rem; height: 54px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.brand { display: flex; align-items: center; gap: 9px; }
+.brand-icon { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 11px; flex-shrink: 0; }
+.brand-name { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 15px; letter-spacing: -.01em; }
+.brand-sep { color: var(--border); margin: 0 2px; }
+.brand-sub { font-family: 'Inter', sans-serif; font-size: 12px; color: var(--muted); }
+.live-badge { display: flex; align-items: center; gap: 6px; font-family: 'Inter', sans-serif; font-size: 11px; color: var(--muted); background: var(--bg); border: 1px solid var(--border); border-radius: 99px; padding: 4px 10px; }
+.live-dot { width: 6px; height: 6px; border-radius: 50%; background: #f0a500; flex-shrink: 0; transition: background .3s; }
+.live-dot.live { background: #22c55e; animation: pulse 2s infinite; }
+.live-dot.err  { background: #ef4444; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+/* HERO */
+.hero { background: var(--bg); padding: 2.5rem 1.25rem 1.75rem; position: relative; overflow: hidden; }
+.hero-blobs { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.blob { position: absolute; border-radius: 50%; opacity: .45; }
+.b1{width:140px;height:140px;background:#3B5BDB;top:-30px;right:2%;}
+.b2{width:70px;height:70px;background:#f5c842;top:15px;right:20%;border-radius:40% 60%;}
+.b3{width:55px;height:55px;background:#e8836e;top:65px;right:12%;}
+.b4{width:45px;height:45px;background:#2d8c5e;top:105px;right:5%;}
+.b5{width:90px;height:90px;background:#b07d5a;top:-15px;right:32%;border-radius:60% 40%;opacity:.25;}
+.hero-content { position: relative; z-index: 1; max-width: 520px; margin: 0 auto; text-align: center; }
+.hero-eyebrow { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+.hero-title { font-family: 'Syne', sans-serif; font-size: clamp(2rem, 8vw, 3rem); font-weight: 800; line-height: 1.05; letter-spacing: -.02em; margin-bottom: 6px; }
+.hero-title span { color: var(--accent); }
+.hero-sub { font-family: 'Inter', sans-serif; font-size: 13px; color: var(--muted); margin-bottom: 1.25rem; line-height: 1.5; }
+.hero-btns { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: center; }
+.btn { display: inline-flex; align-items: center; gap: 5px; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500; padding: 7px 13px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--text); cursor: pointer; text-decoration: none; transition: transform .12s, box-shadow .12s; white-space: nowrap; }
+.btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,.08); }
+.btn-accent { background: var(--accent); color: #fff; border-color: var(--accent); }
+.btn-accent:hover { background: #3451c7; }
+.last-updated { font-family: 'Inter', sans-serif; font-size: 11px; color: var(--faint); }
+
+/* CONTAINER */
+.container { max-width: 680px; margin: 0 auto; padding: 1.25rem 1.25rem 3rem; }
+
+/* SECTION LABEL */
+.section-label { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+
+/* STAT CARDS */
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 1.25rem; }
+.stat-card { border-radius: 16px; padding: 16px 14px 12px; border: 1px solid transparent; transition: transform .12s, box-shadow .12s; }
+.stat-card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.07); }
+.sc-blue   { background: #d6eaff; border-color: #bfdbfe; }
+.sc-green  { background: var(--green-bg); border-color: var(--green-bd); }
+.sc-purple { background: #ede9fe; border-color: #ddd6fe; }
+.stat-label-card { font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: #666; margin-bottom: 4px; }
+.stat-value { font-family: 'Syne', sans-serif; font-size: 1.9rem; font-weight: 800; line-height: 1; }
+.stat-hint { font-family: 'Inter', sans-serif; font-size: 10px; color: #999; margin-top: 3px; }
+
+/* PARTICIPANT CARDS */
+.pt-list { display: flex; flex-direction: column; gap: 10px; }
+.pt-card { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,.04); transition: box-shadow .15s; }
+.pt-card:hover { box-shadow: 0 4px 18px rgba(0,0,0,.08); }
+
+.pt-card-header { display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer; user-select: none; -webkit-user-select: none; }
+.pt-avatar { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 13px; flex-shrink: 0; }
+.av-0{background:#d6eaff;color:#1d4ed8;} .av-1{background:var(--green-bg);color:var(--green-text);}
+.av-2{background:var(--yellow-bg);color:var(--yellow-text);} .av-3{background:#ede9fe;color:#6d28d9;}
+.av-4{background:#ffe4e6;color:#be123c;} .av-5{background:#ffedd5;color:#c2410c;}
+.av-6{background:#f0fdf4;color:#15803d;} .av-7{background:#fdf4ff;color:#7e22ce;}
+
+.pt-header-info { flex: 1; min-width: 0; }
+.pt-pid { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 15px; letter-spacing: -.01em; line-height: 1; }
+.pt-period { font-family: 'Inter', sans-serif; font-size: 11px; color: var(--faint); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pt-header-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.pt-pct { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; line-height: 1; }
+.pct-high{color:var(--green-text);} .pct-med{color:var(--yellow-text);} .pct-low{color:#ef4444;}
+
+.chevron { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; color: var(--faint); transition: transform .25s ease; flex-shrink: 0; }
+.pt-card.open .chevron { transform: rotate(180deg); }
+
+.pt-progress-bar { height: 3px; background: #f0f0ea; margin: 0 16px; }
+.pt-progress-fill { height: 100%; border-radius: 99px; transition: width .6s ease; }
+
+.pt-body { display: none; border-top: 1px solid #f0f0ea; padding: 14px 16px; }
+.pt-card.open .pt-body { display: block; }
+.pt-sessions-summary { font-family: 'Inter', sans-serif; font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+.pt-sessions-summary strong { font-weight: 600; color: var(--text); }
+
+/* WEEK GRID */
+.week-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.wk-block { background: #fafaf8; border: 1px solid #f0f0ea; border-radius: 12px; padding: 10px 10px 8px; display: flex; flex-direction: column; gap: 3px; }
+.wk-label { font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--faint); }
+.wk-date { font-family: 'Inter', sans-serif; font-size: 10px; color: var(--faint); line-height: 1.4; }
+.wk-pill { margin-top: 4px; display: inline-block; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 99px; align-self: flex-start; }
+.wk-full    { background: var(--green-bg);  color: var(--green-text);  border: 1px solid var(--green-bd); }
+.wk-partial { background: var(--yellow-bg); color: var(--yellow-text); border: 1px solid var(--yellow-bd); }
+.wk-zero    { background: #f5f5f2; color: var(--faint); border: 1px solid #e5e5e0; }
+.wk-over    { background: var(--blue-bg);   color: var(--blue-text);   border: 1px solid var(--blue-bd); }
+.wk-future  { background: #fff; color: #ccc; border: 1px dashed #e5e5e0; }
+
+/* LEGEND */
+.legend-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 1rem; padding: 12px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-family: 'Inter', sans-serif; font-size: 11px; color: #888; }
+.legend-dot { width: 8px; height: 8px; border-radius: 3px; flex-shrink: 0; }
+
+/* STATE */
+.state-box { text-align: center; padding: 3rem 1rem; font-family: 'Inter', sans-serif; font-size: 13px; color: var(--faint); }
+.state-box.err { color: #ef4444; }
+
+/* FOOTER */
+.page-footer { text-align: center; padding: 2rem; font-family: 'Inter', sans-serif; font-size: 11px; color: var(--faint); }
+
+@media(max-width: 400px) {
+  .stat-grid { grid-template-columns: 1fr 1fr; }
+  .sc-purple { display: none; }
+  .week-grid { grid-template-columns: repeat(2, 1fr); }
+  .brand-sub { display: none; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="brand">
+    <div class="brand-icon">DH</div>
+    <span class="brand-name">Dichoptic Hub</span>
+    <span class="brand-sep">·</span>
+    <span class="brand-sub">Adherence</span>
+  </div>
+  <div class="live-badge">
+    <div class="live-dot" id="dot"></div>
+    <span id="status-text">Connecting...</span>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-blobs">
+    <div class="blob b1"></div><div class="blob b2"></div>
+    <div class="blob b3"></div><div class="blob b4"></div><div class="blob b5"></div>
+  </div>
+  <div class="hero-content">
+    <h1 class="hero-title">Participant<br><span>Adherence</span></h1>
+    <p class="hero-sub">Custom dichoptic therapy · 5 sessions/week · 12 weeks</p>
+    <div class="hero-btns">
+      <a class="btn" href="https://docs.google.com/spreadsheets/d/1wKHpsEFhbHdxcp9XgC0qpOGthvM3O9NAS0UBujXLsag/edit?gid=1222761669#gid=1222761669" target="_blank">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#34a853" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        Sheets
+      </a>
+      <a class="btn" href="https://visualtherapy.github.io/nuramblyopiadt/" target="_blank">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        App
+      </a>
+      <button class="btn btn-accent" onclick="loadData()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Refresh
+      </button>
+      <span class="last-updated" id="last-updated"></span>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="section-label">Overview</div>
+  <div class="stat-grid">
+    <div class="stat-card sc-blue">
+      <div class="stat-label-card">Participants</div>
+      <div class="stat-value" id="s-total">—</div>
+      <div class="stat-hint">enrolled</div>
+    </div>
+    <div class="stat-card sc-green">
+      <div class="stat-label-card">Avg. adherence</div>
+      <div class="stat-value" id="s-avg">—</div>
+      <div class="stat-hint">overall</div>
+    </div>
+    <div class="stat-card sc-purple">
+      <div class="stat-label-card">Total sessions</div>
+      <div class="stat-value" id="s-sessions">—</div>
+      <div class="stat-hint">logged</div>
+    </div>
+  </div>
+
+  <div class="section-label" style="margin-top:.25rem;">Participants</div>
+  <div id="pt-list">
+    <div class="state-box">Loading data...</div>
+  </div>
+
+  <div class="legend-row" id="legend-row" style="display:none;">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green-bg);border:1px solid var(--green-bd);"></div>5/5 complete</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--yellow-bg);border:1px solid var(--yellow-bd);"></div>partial (&lt;5)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--blue-bg);border:1px solid var(--blue-bd);"></div>exceeded (&gt;5)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#f5f5f2;border:1px solid #e5e5e0;"></div>0 sessions</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#fff;border:1px dashed #e5e5e0;"></div>upcoming</div>
+  </div>
+
+</div>
+
+<footer class="page-footer">
+  Created by Muhammad Syafiq Hakimi bin Osman &nbsp;·&nbsp; Version 4.0
+</footer>
+
+<script>
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz5he3slsDblJm0UItcHE4ZSlsje8zvNErHTrYj_dj68ZqswW9wR8oCzZSDVKCNldD8/exec";
+const TARGET = 5, TOTAL_WK = 12;
+const AV_COLORS = ['av-0','av-1','av-2','av-3','av-4','av-5','av-6','av-7'];
+
+function getWeekStart(d){ const x=new Date(d); x.setHours(0,0,0,0); x.setDate(x.getDate()-x.getDay()); return x; }
+function sameDay(a,b){ return a.toDateString()===b.toDateString(); }
+function parseDate(v){ if(!v) return null; const d=new Date(v); return isNaN(d)?null:d; }
+const fmtShort = d => d.toLocaleDateString('en-MY',{day:'numeric',month:'short'});
+const fmtFull  = d => d.toLocaleDateString('en-MY',{day:'numeric',month:'short',year:'numeric'});
+function weekRange(ws){ const we=new Date(ws); we.setDate(we.getDate()+6); return fmtShort(ws)+'–'+fmtShort(we); }
+function barColor(p){ return p>=80?'#22c55e':p>=50?'#f59e0b':'#ef4444'; }
+function pillClass(n,fut){ if(fut) return 'wk-future'; if(n===0) return 'wk-zero'; if(n<TARGET) return 'wk-partial'; if(n===TARGET) return 'wk-full'; return 'wk-over'; }
+function pillText(n,fut){ if(fut) return '—'; if(n===0) return '0'; return `${n}/${TARGET}`; }
+
+async function loadData(){
+  const dot=document.getElementById('dot'), st=document.getElementById('status-text');
+  dot.className='live-dot'; st.textContent='Fetching...';
+  try {
+    const json=await fetch(APPS_SCRIPT_URL).then(r=>r.json());
+    if(json.result!=='success') throw new Error(json.message||'Unknown error');
+
+    const pPat=/^P\d{1,3}$/;
+    const filtered=json.data.filter(r=>pPat.test((r["Participant ID"]||'').trim()));
+    const byPart={};
+    for(const row of filtered){
+      const pid=row["Participant ID"].trim();
+      if(!byPart[pid]) byPart[pid]=[];
+      const d=parseDate(row["Date"]||row["Timestamp"]);
+      if(d) byPart[pid].push(d);
+    }
+    const patients=Object.keys(byPart).sort();
+    const partTarget=TARGET*TOTAL_WK;
+    const now=new Date();
+
+    const partData={};
+    for(const pid of patients){
+      const dates=byPart[pid].sort((a,b)=>a-b);
+      const fws=getWeekStart(dates[0]);
+      const weeks=Array.from({length:TOTAL_WK},(_,i)=>{ const ws=new Date(fws); ws.setDate(ws.getDate()+i*7); return {start:ws,count:0}; });
+      for(const d of dates){ const ws=getWeekStart(d); for(let i=0;i<weeks.length;i++) if(sameDay(weeks[i].start,ws)){weeks[i].count++;break;} }
+      partData[pid]={weeks,total:dates.length};
+    }
+
+    // Summary
+    const pcts=patients.map(pid=>Math.min(100,Math.round((partData[pid].total/partTarget)*100)));
+    const avg=pcts.length?Math.round(pcts.reduce((a,b)=>a+b,0)/pcts.length):0;
+    document.getElementById('s-total').textContent=patients.length;
+    document.getElementById('s-avg').textContent=avg+'%';
+    document.getElementById('s-sessions').textContent=patients.reduce((s,pid)=>s+partData[pid].total,0);
+
+    if(!patients.length){
+      document.getElementById('pt-list').innerHTML='<div class="state-box">No participant data found.</div>';
+      return;
+    }
+
+    const list=document.getElementById('pt-list');
+    list.innerHTML='';
+
+    patients.forEach((pid,idx)=>{
+      const {weeks,total}=partData[pid];
+      const pct=Math.min(100,Math.round((total/partTarget)*100));
+      const pc=pct>=80?'pct-high':pct>=50?'pct-med':'pct-low';
+      const col=barColor(pct);
+      const fd=byPart[pid].reduce((a,b)=>a<b?a:b);
+      const ed=new Date(fd); ed.setDate(ed.getDate()+83);
+      const avCls=AV_COLORS[idx%AV_COLORS.length];
+
+      let wkHtml='';
+      for(let i=0;i<TOTAL_WK;i++){
+        const w=weeks[i];
+        const isFut=w&&w.start>now;
+        const range=w?weekRange(w.start):'';
+        const parts=range.split('–');
+        wkHtml+=`<div class="wk-block">
+          <span class="wk-label">Week ${i+1}</span>
+          <span class="wk-date">${parts[0]||'—'}<br>${parts[1]?'– '+parts[1]:''}</span>
+          <span class="wk-pill ${pillClass(w?w.count:0,isFut)}">${pillText(w?w.count:0,isFut)}</span>
+        </div>`;
+      }
+
+      const card=document.createElement('div');
+      card.className='pt-card';
+      card.innerHTML=`
+        <div class="pt-card-header" onclick="this.closest('.pt-card').classList.toggle('open')">
+          <div class="pt-avatar ${avCls}">${pid}</div>
+          <div class="pt-header-info">
+            <div class="pt-pid">${pid}</div>
+            <div class="pt-period">${fmtShort(fd)} → ${fmtShort(ed)}</div>
+          </div>
+          <div class="pt-header-right">
+            <span class="pt-pct ${pc}">${pct}%</span>
+            <div class="chevron">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+          </div>
+        </div>
+        <div class="pt-progress-bar"><div class="pt-progress-fill" style="width:${pct}%;background:${col};"></div></div>
+        <div class="pt-body">
+          <p class="pt-sessions-summary"><strong>${total}</strong> / ${partTarget} sessions logged &nbsp;·&nbsp; ${pct}% adherence</p>
+          <div class="week-grid">${wkHtml}</div>
+        </div>`;
+      list.appendChild(card);
+    });
+
+    document.getElementById('legend-row').style.display='flex';
+    dot.className='live-dot live';
+    st.textContent=`Live · ${patients.length} participants`;
+    document.getElementById('last-updated').textContent='Updated '+new Date().toLocaleTimeString('en-MY');
+
+  } catch(err){
+    dot.className='live-dot err'; st.textContent='Error';
+    document.getElementById('pt-list').innerHTML=`<div class="state-box err">⚠ ${err.message}</div>`;
+  }
+}
+loadData();
+</script>
+</body>
+</html>
